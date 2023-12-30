@@ -40,67 +40,71 @@ class _SignUpViewState extends ConsumerState<SignUpView> {
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(authControllerProvider);
+
     return Scaffold(
       appBar: appbar,
-      body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 20.0,
-            ),
-            child: Column(
-              children: [
-                // textfield1
-                AuthField(
-                  controller: emailController,
-                  hintText: 'Email',
-                ),
-                const SizedBox(height: 25),
-                // textfield2
-                AuthField(
-                  controller: passwordController,
-                  hintText: 'Password',
-                ),
-                // button
-                const SizedBox(height: 40),
-                Align(
-                  alignment: Alignment.topRight,
-                  child: RoundedSmallButton(
-                    onTap: onSignUp,
-                    label: 'Done',
+      body: isLoading
+          ? const Loader()
+          : Center(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20.0,
                   ),
-                ),
-                const SizedBox(height: 40),
-                // navigation button signup -> login | login -> signup
-                RichText(
-                  text: TextSpan(
-                    text: "Already have an account? ",
-                    style: const TextStyle(
-                      fontSize: 16,
-                    ),
+                  child: Column(
                     children: [
-                      TextSpan(
-                        text: 'Log In',
-                        style: const TextStyle(
-                          color: Pallete.blueColor,
-                          fontSize: 16,
+                      // textfield1
+                      AuthField(
+                        controller: emailController,
+                        hintText: 'Email',
+                      ),
+                      const SizedBox(height: 25),
+                      // textfield2
+                      AuthField(
+                        controller: passwordController,
+                        hintText: 'Password',
+                      ),
+                      // button
+                      const SizedBox(height: 40),
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: RoundedSmallButton(
+                          onTap: onSignUp,
+                          label: 'Done',
                         ),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            Navigator.push(
-                              context,
-                              LoginView.route(),
-                            );
-                          },
+                      ),
+                      const SizedBox(height: 40),
+                      // navigation button signup -> login | login -> signup
+                      RichText(
+                        text: TextSpan(
+                          text: "Already have an account? ",
+                          style: const TextStyle(
+                            fontSize: 16,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: 'Log In',
+                              style: const TextStyle(
+                                color: Pallete.blueColor,
+                                fontSize: 16,
+                              ),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  Navigator.push(
+                                    context,
+                                    LoginView.route(),
+                                  );
+                                },
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }
