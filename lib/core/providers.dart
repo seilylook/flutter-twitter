@@ -5,8 +5,8 @@ import 'package:twitter_clone/constants/constants.dart';
 final appwriteClientProvider = Provider((ref) {
   Client client = Client();
   return client
-      .setEndpoint(AppwriteConstants().endPoint)
-      .setProject(AppwriteConstants().projectId)
+      .setEndpoint(AppwriteConstants.endPoint)
+      .setProject(AppwriteConstants.projectId)
       .setSelfSigned(status: true);
 });
 
@@ -18,4 +18,9 @@ final appwriteAccountProvider = Provider((ref) {
 final appwriteDatabaseProvider = Provider((ref) {
   final client = ref.watch(appwriteClientProvider);
   return Databases(client);
+});
+
+final appwriteRealtimeProvider = Provider((ref) {
+  final client = ref.watch(appwriteClientProvider);
+  return Realtime(client);
 });

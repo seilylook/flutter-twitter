@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:twitter_clone/common/common.dart';
 import 'package:twitter_clone/constants/constants.dart';
 import 'package:twitter_clone/features/auth/controller/auth_controller.dart';
-import 'package:twitter_clone/features/auth/view/signup_view.dart';
+import 'package:twitter_clone/features/auth/views/signup_view.dart';
 import 'package:twitter_clone/features/auth/widgets/auth_field.dart';
 import 'package:twitter_clone/theme/pallete.dart';
 
@@ -31,7 +31,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
   }
 
   void onLogIn() {
-    ref.read(authControllerProvider.notifier).logIn(
+    ref.read(authControllerProvider.notifier).login(
           email: emailController.text,
           password: passwordController.text,
           context: context,
