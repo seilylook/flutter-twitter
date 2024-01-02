@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:twitter_clone/constants/constants.dart';
 import 'package:twitter_clone/core/core.dart';
-import 'package:twitter_clone/models/user_model.dart';
+import 'package:twitter_clone/models/models.dart';
 
 final userAPIProvider = Provider((ref) {
   return UserAPI(

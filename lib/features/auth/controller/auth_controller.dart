@@ -2,12 +2,11 @@ import 'package:appwrite/models.dart' as model;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
-import 'package:twitter_clone/apis/auth_api.dart';
-import 'package:twitter_clone/apis/user_api.dart';
+import 'package:twitter_clone/apis/apis.dart';
 import 'package:twitter_clone/core/utils.dart';
 import 'package:twitter_clone/features/auth/views/login_view.dart';
 import 'package:twitter_clone/features/home/views/home_view.dart';
-import 'package:twitter_clone/models/user_model.dart';
+import 'package:twitter_clone/models/models.dart';
 
 var logger = Logger();
 
