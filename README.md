@@ -1,16 +1,29 @@
-# twitter_clone
+# Flutter App - Twitter
 
-A new Flutter project.
+## Dependency
 
-## Getting Started
+### Client
 
-This project is a starting point for a Flutter application.
+```
+dependencies:
+  flutter:
+    sdk: flutter
 
-A few resources to get you started if this is your first Flutter project:
+  cupertino_icons: ^1.0.2
+  flutter_svg: ^2.0.9
+  flutter_riverpod: ^2.4.9
+  fpdart: ^1.1.0
+  image_picker: ^1.0.5
+  carousel_slider: ^4.2.1
+  timeago: ^3.6.0
+  any_link_preview: ^3.0.0
+  like_button: ^2.0.5
+  flutter_dotenv: ^5.1.0
+  appwrite: ^9.0.0
+  equatable: ^2.0.5
+  logger: ^2.0.2+1
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### Server & Database
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- appwrite
