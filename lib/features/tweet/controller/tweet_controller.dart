@@ -16,17 +16,23 @@ final tweetControllerProvider = StateNotifierProvider<TweetController, bool>(
     return TweetController(
       ref: ref,
       tweetAPI: ref.watch(tweetAPIProvider),
+      storageAPI: ref.watch(storageAPIProvider),
     );
   },
 );
 
 class TweetController extends StateNotifier<bool> {
   final TweetAPI _tweetAPI;
+  final StorageAPI _storageAPI;
   final Ref _ref;
 
-  TweetController({required Ref ref, required TweetAPI tweetAPI})
+  TweetController(
+      {required Ref ref,
+      required TweetAPI tweetAPI,
+      required StorageAPI storageAPI})
       : _ref = ref,
         _tweetAPI = tweetAPI,
+        _storageAPI = storageAPI,
         super(false);
 
   void shareTweet({
@@ -57,7 +63,35 @@ class TweetController extends StateNotifier<bool> {
     required List<File> images,
     required String text,
     required BuildContext context,
-  }) {}
+  }) async {
+    state = true;
+    final hashtags = _getHashtagFromText(text);
+    String link = _getLinkFromText(text);
+    final user = _ref.read(currentUserDetailsProvider).value!;
+    final imageLinks = await _storageAPI.uploadImages(images);
+
+    TweetModel tweetModel = TweetModel(
+      text: text,
+      hashtags: hashtags,
+      link: link,
+      imageLinks: imageLinks,
+      uid: user.uid,
+      tweetType: TweetType.image,
+      tweetedAt: DateTime.now(),
+      likes: const [],
+      commentIds: const [],
+      id: '',
+      reshareCount: 0,
+      retweetedBy: '',
+      repliedTo: '',
+    );
+
+    final res = await _tweetAPI.shareTweet(tweetModel);
+
+    res.fold((l) => showSnackBar(context, l.message), (r) => null);
+
+    state = false;
+  }
 
   void _shareTextTweet({
     required String text,
