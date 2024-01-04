@@ -1,3 +1,5 @@
+// ignore_for_file: no_leading_underscores_for_local_identifiers
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 
@@ -40,7 +42,6 @@ class _CarouselImageState extends State<CarouselImage> {
                 },
               ).toList(),
               options: CarouselOptions(
-                height: 400,
                 viewportFraction: 1,
                 enableInfiniteScroll: false,
                 onPageChanged: (index, reason) {
@@ -51,6 +52,7 @@ class _CarouselImageState extends State<CarouselImage> {
               ),
             ),
             Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: widget.imageLinks.asMap().entries.map((e) {
                 return Container(
                   width: 12,

@@ -69,8 +69,10 @@ class TweetCard extends ConsumerWidget {
                             ],
                           ),
                           HashtagText(text: tweet.text),
-                          if (tweet.tweetType == TweetType.image)
+                          if (tweet.tweetType == TweetType.image) ...[
+                            const SizedBox(height: 4),
                             CarouselImage(imageLinks: tweet.imageLinks),
+                          ],
                           if (tweet.link.isNotEmpty) ...[
                             const SizedBox(height: 4),
                             AnyLinkPreview(

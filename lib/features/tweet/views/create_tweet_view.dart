@@ -8,6 +8,7 @@ import 'package:twitter_clone/common/common.dart';
 import 'package:twitter_clone/constants/assets_constants.dart';
 import 'package:twitter_clone/core/utils.dart';
 import 'package:twitter_clone/features/auth/controller/auth_controller.dart';
+import 'package:twitter_clone/features/home/views/home_view.dart';
 import 'package:twitter_clone/features/tweet/controller/tweet_controller.dart';
 import 'package:twitter_clone/theme/pallete.dart';
 
@@ -42,6 +43,8 @@ class _CreateTweetViewState extends ConsumerState<CreateTweetView> {
           text: tweetTextController.text,
           context: context,
         );
+
+    Navigator.pop(context, HomeView.route());
   }
 
   @override
