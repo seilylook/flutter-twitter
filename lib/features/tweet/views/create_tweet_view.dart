@@ -115,15 +115,12 @@ class _CreateTweetViewState extends ConsumerState<CreateTweetView> {
                           (file) {
                             return Container(
                               width: MediaQuery.of(context).size.width,
-                              margin: const EdgeInsets.only(
-                                top: 20,
-                                bottom: 20,
-                                left: 5,
-                                right: 5,
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 5,
                               ),
                               child: Image.file(
                                 file,
-                                fit: BoxFit.cover,
+                                fit: BoxFit.contain,
                               ),
                             );
                           },
