@@ -18,6 +18,7 @@ abstract class ITweetAPI {
   Future<List<model.Document>> getTweets();
   Stream<RealtimeMessage> getLatestTweet();
   FutureEither<model.Document> likeTweet(TweetModel tweetModel);
+  FutureEither<model.Document> updateReshareCount(TweetModel tweetModel);
 }
 
 class TweetAPI implements ITweetAPI {
@@ -81,6 +82,26 @@ class TweetAPI implements ITweetAPI {
       return right(document);
     } on AppwriteException catch (e, st) {
       return left(Failure(e.message ?? 'Unexpected error happened', st));
+    } catch (e, st) {
+      return left(Failure(e.toString(), st));
+    }
+  }
+
+  @override
+  FutureEither<model.Document> updateReshareCount(TweetModel tweetModel) async {
+    try {
+      final document = await _db.updateDocument(
+        databaseId: AppwriteConstants.databaseId,
+        collectionId: AppwriteConstants.tweetCollectionId,
+        documentId: tweetModel.id,
+        data: {
+          'reshareCount': tweetModel.reshareCount,
+        },
+      );
+
+      return right(document);
+    } on AppwriteException catch (e, st) {
+      return left(Failure(e.message ?? "Unexpeted error happened", st));
     } catch (e, st) {
       return left(Failure(e.toString(), st));
     }

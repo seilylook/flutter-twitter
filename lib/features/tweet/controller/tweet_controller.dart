@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
@@ -7,8 +8,7 @@ import 'package:twitter_clone/apis/apis.dart';
 import 'package:twitter_clone/core/enums/tweet_type_enum.dart';
 import 'package:twitter_clone/core/utils.dart';
 import 'package:twitter_clone/features/auth/controller/auth_controller.dart';
-import 'package:twitter_clone/models/tweet_model.dart';
-import 'package:twitter_clone/models/user_model.dart';
+import 'package:twitter_clone/models/models.dart';
 
 var logger = Logger();
 
@@ -69,6 +69,41 @@ class TweetController extends StateNotifier<bool> {
 
     final res = await _tweetAPI.likeTweet(tweetModel);
     res.fold((l) => null, (r) => null);
+  }
+
+  void reshareTweet(
+    TweetModel tweetModel,
+    UserModel currentUser,
+    BuildContext context,
+  ) async {
+    tweetModel = tweetModel.copyWith(
+      retweetedBy: currentUser.name,
+      likes: [],
+      commentIds: [],
+      reshareCount: tweetModel.reshareCount + 1,
+    );
+
+    final res = await _tweetAPI.updateReshareCount(tweetModel);
+    res.fold(
+      (l) => showSnackBar(context, l.message),
+      (r) async {
+        tweetModel = tweetModel.copyWith(
+          id: ID.unique(),
+          reshareCount: 0,
+          tweetedAt: DateTime.now(),
+        );
+
+        final res2 = await _tweetAPI.shareTweet(tweetModel);
+
+        res2.fold(
+          (l) => showSnackBar(context, l.message),
+          (r) => showSnackBar(
+            context,
+            "Retweet Success!",
+          ),
+        );
+      },
+    );
   }
 
   void shareTweet({

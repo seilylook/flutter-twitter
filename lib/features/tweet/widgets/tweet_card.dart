@@ -18,20 +18,20 @@ import 'package:twitter_clone/theme/pallete.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class TweetCard extends ConsumerWidget {
-  final TweetModel tweet;
+  final TweetModel tweetModel;
 
   const TweetCard({
     super.key,
-    required this.tweet,
+    required this.tweetModel,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentUser = ref.watch(currentUserDetailsProvider).value!;
+    final currentUser = ref.watch(currentUserDetailsProvider).value;
 
     return currentUser == null
-        ? const Loader()
-        : ref.watch(userDetailsProvider(tweet.uid)).when(
+        ? const SizedBox()
+        : ref.watch(userDetailsProvider(tweetModel.uid)).when(
               data: (user) {
                 return Column(
                   children: [
@@ -51,6 +51,25 @@ class TweetCard extends ConsumerWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              if (tweetModel.retweetedBy.isNotEmpty)
+                                Row(
+                                  children: [
+                                    SvgPicture.asset(
+                                      AssetsConstants.retweetIcon,
+                                      color: Pallete.blueColor,
+                                      height: 20,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      ' ${tweetModel.retweetedBy} retweeted',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        color: Pallete.blueColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               Row(
                                 children: [
                                   Container(
@@ -67,7 +86,7 @@ class TweetCard extends ConsumerWidget {
                                   ),
                                   Text(
                                     '@${user.name} · ${timeago.format(
-                                      tweet.tweetedAt,
+                                      tweetModel.tweetedAt,
                                       locale: 'en_short',
                                     )}',
                                     style: const TextStyle(
@@ -77,17 +96,18 @@ class TweetCard extends ConsumerWidget {
                                   ),
                                 ],
                               ),
-                              HashtagText(text: tweet.text),
-                              if (tweet.tweetType == TweetType.image) ...[
+                              HashtagText(text: tweetModel.text),
+                              if (tweetModel.tweetType == TweetType.image) ...[
                                 const SizedBox(height: 4),
-                                CarouselImage(imageLinks: tweet.imageLinks),
+                                CarouselImage(
+                                    imageLinks: tweetModel.imageLinks),
                               ],
-                              if (tweet.link.isNotEmpty) ...[
+                              if (tweetModel.link.isNotEmpty) ...[
                                 const SizedBox(height: 4),
                                 AnyLinkPreview(
                                   displayDirection:
                                       UIDirection.uiDirectionHorizontal,
-                                  link: 'https://${tweet.link}',
+                                  link: 'https://${tweetModel.link}',
                                 ),
                               ],
                               Container(
@@ -99,21 +119,31 @@ class TweetCard extends ConsumerWidget {
                                   children: [
                                     TweetIconButton(
                                       pathName: AssetsConstants.viewsIcon,
-                                      text: (tweet.commentIds.length +
-                                              tweet.reshareCount +
-                                              tweet.likes.length)
+                                      text: (tweetModel.commentIds.length +
+                                              tweetModel.reshareCount +
+                                              tweetModel.likes.length)
                                           .toString(),
                                       onTap: () {},
                                     ),
                                     TweetIconButton(
                                       pathName: AssetsConstants.commentIcon,
-                                      text: tweet.commentIds.length.toString(),
+                                      text: tweetModel.commentIds.length
+                                          .toString(),
                                       onTap: () {},
                                     ),
                                     TweetIconButton(
                                       pathName: AssetsConstants.retweetIcon,
-                                      text: tweet.reshareCount.toString(),
-                                      onTap: () {},
+                                      text: tweetModel.reshareCount.toString(),
+                                      onTap: () {
+                                        ref
+                                            .read(tweetControllerProvider
+                                                .notifier)
+                                            .reshareTweet(
+                                              tweetModel,
+                                              currentUser,
+                                              context,
+                                            );
+                                      },
                                     ),
                                     LikeButton(
                                       size: 25,
@@ -122,14 +152,14 @@ class TweetCard extends ConsumerWidget {
                                             .read(tweetControllerProvider
                                                 .notifier)
                                             .likeTweet(
-                                              tweet,
+                                              tweetModel,
                                               currentUser,
                                             );
 
                                         return !isLiked;
                                       },
-                                      isLiked:
-                                          tweet.likes.contains(currentUser.uid),
+                                      isLiked: tweetModel.likes
+                                          .contains(currentUser.uid),
                                       likeBuilder: (isLiked) {
                                         return isLiked
                                             ? SvgPicture.asset(
@@ -142,7 +172,7 @@ class TweetCard extends ConsumerWidget {
                                                 color: Pallete.greyColor,
                                               );
                                       },
-                                      likeCount: tweet.likes.length,
+                                      likeCount: tweetModel.likes.length,
                                       countBuilder: (likeCount, isLiked, text) {
                                         return Padding(
                                           padding:
