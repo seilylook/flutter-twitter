@@ -8,6 +8,7 @@ import 'package:twitter_clone/core/enums/tweet_type_enum.dart';
 import 'package:twitter_clone/core/utils.dart';
 import 'package:twitter_clone/features/auth/controller/auth_controller.dart';
 import 'package:twitter_clone/models/tweet_model.dart';
+import 'package:twitter_clone/models/user_model.dart';
 
 var logger = Logger();
 
@@ -51,6 +52,23 @@ class TweetController extends StateNotifier<bool> {
   Future<List<TweetModel>> getTweets() async {
     final tweetList = await _tweetAPI.getTweets();
     return tweetList.map((tweet) => TweetModel.fromMap(tweet.data)).toList();
+  }
+
+  void likeTweet(TweetModel tweetModel, UserModel userModel) async {
+    List<String> likes = tweetModel.likes;
+
+    if (tweetModel.likes.contains(userModel.uid)) {
+      likes.remove(userModel.uid);
+    } else {
+      likes.add(userModel.uid);
+    }
+
+    tweetModel = tweetModel.copyWith(
+      likes: likes,
+    );
+
+    final res = await _tweetAPI.likeTweet(tweetModel);
+    res.fold((l) => null, (r) => null);
   }
 
   void shareTweet({
