@@ -19,6 +19,8 @@ abstract class ITweetAPI {
   Stream<RealtimeMessage> getLatestTweet();
   FutureEither<model.Document> likeTweet(TweetModel tweetModel);
   FutureEither<model.Document> updateReshareCount(TweetModel tweetModel);
+  Future<List<model.Document>> getRepliesFromTweet(TweetModel tweetModel);
+  Future<model.Document> getTweetById(String id);
 }
 
 class TweetAPI implements ITweetAPI {
@@ -105,5 +107,28 @@ class TweetAPI implements ITweetAPI {
     } catch (e, st) {
       return left(Failure(e.toString(), st));
     }
+  }
+
+  @override
+  Future<List<model.Document>> getRepliesFromTweet(
+      TweetModel tweetModel) async {
+    final document = await _db.listDocuments(
+      databaseId: AppwriteConstants.databaseId,
+      collectionId: AppwriteConstants.tweetCollectionId,
+      queries: [
+        Query.equal('repliedTo', tweetModel.id),
+      ],
+    );
+
+    return document.documents;
+  }
+
+  @override
+  Future<model.Document> getTweetById(String id) async {
+    return _db.getDocument(
+      databaseId: AppwriteConstants.databaseId,
+      collectionId: AppwriteConstants.tweetCollectionId,
+      documentId: id,
+    );
   }
 }
