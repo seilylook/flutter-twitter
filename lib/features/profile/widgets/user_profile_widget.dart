@@ -6,6 +6,7 @@ import 'package:twitter_clone/common/loading_page.dart';
 import 'package:twitter_clone/constants/constants.dart';
 import 'package:twitter_clone/features/auth/controller/auth_controller.dart';
 import 'package:twitter_clone/features/profile/controller/user_profile_controller.dart';
+import 'package:twitter_clone/features/profile/views/edit_profile_view.dart';
 import 'package:twitter_clone/features/profile/widgets/follow_count.dart';
 import 'package:twitter_clone/features/tweet/controller/tweet_controller.dart';
 import 'package:twitter_clone/features/tweet/widgets/tweet_card.dart';
@@ -41,7 +42,10 @@ class UserProfile extends ConsumerWidget {
                             ? Container(
                                 color: Pallete.blueColor,
                               )
-                            : Image.network(userModel.bannerPic!),
+                            : Image.network(
+                                userModel.bannerPic!,
+                                fit: BoxFit.fitWidth,
+                              ),
                       ),
                       Positioned(
                         bottom: 0,
@@ -57,7 +61,11 @@ class UserProfile extends ConsumerWidget {
                         margin: const EdgeInsets.all(20),
                         child: OutlinedButton(
                           autofocus: true,
-                          onPressed: () {},
+                          onPressed: () {
+                            if (currentUser.uid == userModel.uid) {
+                              Navigator.push(context, EditProfileView.route());
+                            }
+                          },
                           style: ElevatedButton.styleFrom(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
@@ -197,21 +205,6 @@ class UserProfile extends ConsumerWidget {
                       ErrorText(error: error.toString()),
                   loading: () => const Loader(),
                 ),
-            // ref.watch(getUserTweetsProvider(userModel.uid)).when(
-            //       data: (tweets) {
-            //         return ListView.builder(
-            //           itemCount: tweets.length,
-            //           itemBuilder: (BuildContext context, int index) {
-            //             final tweet = tweets[index];
-            //             return TweetCard(tweetModel: tweet);
-            //           },
-            //         );
-            //       },
-            //       error: (error, st) => ErrorText(
-            //         error: error.toString(),
-            //       ),
-            //       loading: () => const Loader(),
-            //     ),
           );
   }
 }
