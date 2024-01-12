@@ -37,7 +37,10 @@ class TweetCard extends ConsumerWidget {
               data: (user) {
                 return GestureDetector(
                   onTap: () {
-                    Navigator.push(context, TwitterReplyView.route(tweetModel));
+                    Navigator.push(
+                      context,
+                      TwitterReplyView.route(tweetModel),
+                    );
                   },
                   child: Column(
                     children: [
@@ -49,7 +52,9 @@ class TweetCard extends ConsumerWidget {
                             child: GestureDetector(
                               onTap: () {
                                 Navigator.push(
-                                    context, UserProfileView.route(user));
+                                  context,
+                                  UserProfileView.route(user),
+                                );
                               },
                               child: CircleAvatar(
                                 backgroundImage: NetworkImage(

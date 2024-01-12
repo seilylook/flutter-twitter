@@ -60,7 +60,6 @@ class UserProfile extends ConsumerWidget {
                           onPressed: () {
                             if (currentUser.uid == user.uid) {
                               Navigator.push(context, EditProfileView.route());
-                              return;
                             }
                           },
                           style: ElevatedButton.styleFrom(

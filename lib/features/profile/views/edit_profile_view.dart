@@ -19,24 +19,24 @@ class EditProfileView extends ConsumerStatefulWidget {
 }
 
 class _EditProfileViewState extends ConsumerState<EditProfileView> {
-  late TextEditingController nameCtr;
-  late TextEditingController bioCtr;
+  late TextEditingController nameController;
+  late TextEditingController bioController;
   File? bannerFile;
   File? profileFile;
 
   @override
   void initState() {
     super.initState();
-    nameCtr = TextEditingController(
+    nameController = TextEditingController(
         text: ref.read(currentUserDetailsProvider).value?.name ?? '');
-    bioCtr = TextEditingController(
+    bioController = TextEditingController(
         text: ref.read(currentUserDetailsProvider).value?.bio ?? '');
   }
 
   @override
   void dispose() {
-    nameCtr.dispose();
-    bioCtr.dispose();
+    nameController.dispose();
+    bioController.dispose();
     super.dispose();
   }
 
@@ -60,23 +60,22 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = ref.watch(currentUserDetailsProvider).value;
+    final user = ref.watch(currentUserDetailsProvider).value;
     final isLoading = ref.watch(userProfileControllerProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Profile'),
+        centerTitle: false,
         actions: [
           TextButton(
             onPressed: () {
-              if (currentUser == null) return;
-
               ref
                   .watch(userProfileControllerProvider.notifier)
                   .updateUserProfile(
-                    userModel: currentUser.copyWith(
-                      bio: bioCtr.text,
-                      name: nameCtr.text,
+                    userModel: user!.copyWith(
+                      bio: bioController.text,
+                      name: nameController.text,
                     ),
                     context: context,
                     bannerFile: bannerFile,
@@ -87,7 +86,7 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
           ),
         ],
       ),
-      body: isLoading || currentUser == null
+      body: isLoading || user == null
           ? const Loader()
           : Column(
               children: [
@@ -108,10 +107,10 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
                                   bannerFile!,
                                   fit: BoxFit.cover,
                                 )
-                              : currentUser.bannerPic != null &&
-                                      currentUser.bannerPic!.isNotEmpty
+                              : user.bannerPic != null &&
+                                      user.bannerPic!.isNotEmpty
                                   ? Image.network(
-                                      currentUser.bannerPic!,
+                                      user.bannerPic!,
                                       fit: BoxFit.cover,
                                     )
                                   : Container(
@@ -131,7 +130,7 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
                                 )
                               : CircleAvatar(
                                   backgroundImage:
-                                      NetworkImage(currentUser.profilePic!),
+                                      NetworkImage(user.profilePic!),
                                   radius: 40,
                                 ),
                         ),
@@ -140,7 +139,7 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
                   ),
                 ),
                 TextField(
-                  controller: nameCtr,
+                  controller: nameController,
                   decoration: const InputDecoration(
                     hintText: 'Name',
                     contentPadding: EdgeInsets.all(18),
@@ -150,7 +149,7 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
                   height: 20,
                 ),
                 TextField(
-                  controller: bioCtr,
+                  controller: bioController,
                   decoration: const InputDecoration(
                     hintText: 'Bio',
                     contentPadding: EdgeInsets.all(18),
