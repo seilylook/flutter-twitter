@@ -24,7 +24,7 @@ class UserProfileView extends ConsumerWidget {
       body: ref.watch(getLatestUserProfileDataProvider).when(
             data: (data) {
               if (data.events.contains(
-                'databases.*.collections.${AppwriteConstants.userCollectionId}.documents.${user.uid}.update',
+                'databases.*.collections.${AppwriteConstants.userCollectionId}.documents.${copyOfUser.uid}.update',
               )) {
                 copyOfUser = UserModel.fromMap(data.payload);
                 logger.d(copyOfUser);

@@ -60,6 +60,14 @@ class UserProfile extends ConsumerWidget {
                           onPressed: () {
                             if (currentUser.uid == user.uid) {
                               Navigator.push(context, EditProfileView.route());
+                            } else {
+                              ref
+                                  .watch(userProfileControllerProvider.notifier)
+                                  .followUser(
+                                    user: user,
+                                    context: context,
+                                    currentUser: currentUser,
+                                  );
                             }
                           },
                           style: ElevatedButton.styleFrom(
@@ -133,14 +141,14 @@ class UserProfile extends ConsumerWidget {
                         Row(
                           children: [
                             FollowCount(
-                                count: user.following?.length ?? 0,
-                                text: 'Following'),
-                            const SizedBox(
-                              width: 15,
+                              count: user.following!.length,
+                              text: 'Following',
                             ),
+                            const SizedBox(width: 15),
                             FollowCount(
-                                count: user.followers?.length ?? 0,
-                                text: 'Followers'),
+                              count: user.followers!.length,
+                              text: 'Followers',
+                            ),
                           ],
                         ),
                         const SizedBox(
