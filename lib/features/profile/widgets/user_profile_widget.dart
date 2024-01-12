@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:logger/logger.dart';
 import 'package:twitter_clone/common/error_page.dart';
 import 'package:twitter_clone/common/loading_page.dart';
@@ -8,7 +9,6 @@ import 'package:twitter_clone/features/auth/controller/auth_controller.dart';
 import 'package:twitter_clone/features/profile/controller/user_profile_controller.dart';
 import 'package:twitter_clone/features/profile/views/edit_profile_view.dart';
 import 'package:twitter_clone/features/profile/widgets/follow_count.dart';
-import 'package:twitter_clone/features/tweet/controller/tweet_controller.dart';
 import 'package:twitter_clone/features/tweet/widgets/tweet_card.dart';
 import 'package:twitter_clone/models/models.dart';
 import 'package:twitter_clone/theme/pallete.dart';
@@ -16,11 +16,9 @@ import 'package:twitter_clone/theme/pallete.dart';
 var logger = Logger();
 
 class UserProfile extends ConsumerWidget {
-  final UserModel userModel;
-  const UserProfile({
-    super.key,
-    required this.userModel,
-  });
+  final UserModel user;
+
+  const UserProfile({Key? key, required this.user}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,7 +27,7 @@ class UserProfile extends ConsumerWidget {
     return currentUser == null
         ? const Loader()
         : NestedScrollView(
-            headerSliverBuilder: (context, innerBoxIsScrolled) {
+            headerSliverBuilder: ((context, innerBoxIsScrolled) {
               return [
                 SliverAppBar(
                   expandedHeight: 150,
@@ -38,50 +36,51 @@ class UserProfile extends ConsumerWidget {
                   flexibleSpace: Stack(
                     children: [
                       Positioned.fill(
-                        child: userModel.bannerPic!.isEmpty
-                            ? Container(
-                                color: Pallete.blueColor,
-                              )
-                            : Image.network(
-                                userModel.bannerPic!,
-                                fit: BoxFit.fitWidth,
-                              ),
+                        child:
+                            user.bannerPic != null && user.bannerPic!.isNotEmpty
+                                ? Image.network(
+                                    user.bannerPic!,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Container(
+                                    color: Pallete.blueColor,
+                                  ),
                       ),
                       Positioned(
                         bottom: 0,
                         child: CircleAvatar(
-                          backgroundImage: NetworkImage(
-                            userModel.profilePic!,
-                          ),
-                          radius: 50,
+                          backgroundImage: NetworkImage(user.profilePic!),
+                          radius: 45,
                         ),
                       ),
                       Container(
                         alignment: Alignment.bottomRight,
                         margin: const EdgeInsets.all(20),
                         child: OutlinedButton(
-                          autofocus: true,
                           onPressed: () {
-                            if (currentUser.uid == userModel.uid) {
+                            if (currentUser.uid == user.uid) {
                               Navigator.push(context, EditProfileView.route());
+                              return;
                             }
                           },
                           style: ElevatedButton.styleFrom(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                               side: const BorderSide(
-                                width: 1.5,
                                 color: Pallete.whiteColor,
+                                width: 1.10,
                               ),
                             ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 25,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 25),
                           ),
                           child: Text(
-                            currentUser.uid == userModel.uid
-                                ? "Edit Profile"
-                                : 'Follow',
+                            currentUser.uid == user.uid
+                                ? 'Edit Profile'
+                                : currentUser.following != null &&
+                                        currentUser.following!
+                                            .contains(user.uid)
+                                    ? 'Unfollow'
+                                    : 'Follow',
                             style: const TextStyle(
                               color: Pallete.whiteColor,
                             ),
@@ -96,113 +95,79 @@ class UserProfile extends ConsumerWidget {
                   sliver: SliverList(
                     delegate: SliverChildListDelegate(
                       [
-                        Text(
-                          userModel.name,
-                          style: const TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Row(
+                          children: [
+                            Text(
+                              user.name,
+                              style: const TextStyle(
+                                fontSize: 25,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (user.isTwitterBlue)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 3.0),
+                                child: SvgPicture.asset(
+                                  AssetsConstants.verifiedIcon,
+                                  height: 18,
+                                ),
+                              ),
+                          ],
                         ),
                         Text(
-                          '@${userModel.name}',
+                          '@${user.name}',
                           style: const TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
-                            color: Pallete.blueColor,
-                          ),
-                        ),
-                        Text(
-                          userModel.bio!,
-                          style: const TextStyle(
-                            fontSize: 22,
+                            fontSize: 17,
                             color: Pallete.greyColor,
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        Text(
+                          '${user.bio}',
+                          style: const TextStyle(
+                            fontSize: 17,
+                            color: Pallete.greyColor,
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
                         Row(
                           children: [
                             FollowCount(
-                              count: userModel.followers!.length,
-                              text: 'Followers',
+                                count: user.following?.length ?? 0,
+                                text: 'Following'),
+                            const SizedBox(
+                              width: 15,
                             ),
-                            const SizedBox(width: 15),
                             FollowCount(
-                              count: userModel.following!.length,
-                              text: 'Followings',
-                            ),
+                                count: user.followers?.length ?? 0,
+                                text: 'Followers'),
                           ],
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(
+                          height: 2,
+                        ),
                         const Divider(
                           color: Pallete.whiteColor,
-                        )
+                        ),
                       ],
                     ),
                   ),
                 )
               ];
-            },
-            body: ref.watch(getUserTweetsProvider(userModel.uid)).when(
+            }),
+            body: ref.watch(getUserTweetsProvider(user.uid)).when(
                   data: (tweets) {
-                    return ref.watch(getLatestTweetProvider).when(
-                          data: (data) {
-                            if (data.events.contains(
-                              'databases.*.collections.${AppwriteConstants.tweetCollectionId}.documents.*.create',
-                            )) {
-                              logger.d(data.events);
-
-                              tweets.insert(
-                                  0, TweetModel.fromMap(data.payload));
-                            } else if (data.events.contains(
-                              'databases.*.collections.${AppwriteConstants.tweetCollectionId}.documents.*.update',
-                            )) {
-                              logger.d(data.events[0]);
-                              // get id of tweet
-                              final startingPoint =
-                                  data.events[0].lastIndexOf('documents.');
-                              final endPoint =
-                                  data.events[0].lastIndexOf('.update');
-                              final targetTweetId = data.events[0]
-                                  .substring(startingPoint + 10, endPoint);
-
-                              var newTweet = tweets
-                                  .where(
-                                      (element) => element.id == targetTweetId)
-                                  .first;
-
-                              final removeTweetIndex = tweets.indexOf(newTweet);
-
-                              tweets.removeWhere(
-                                (element) => element.id == targetTweetId,
-                              );
-
-                              newTweet = TweetModel.fromMap(data.payload);
-                              tweets.insert(removeTweetIndex, newTweet);
-                            }
-
-                            return ListView.builder(
-                              itemCount: tweets.length,
-                              itemBuilder: (BuildContext context, index) {
-                                final tweet = tweets[index];
-                                return TweetCard(tweetModel: tweet);
-                              },
-                            );
-                          },
-                          error: (error, stackTrace) =>
-                              ErrorText(error: error.toString()),
-                          loading: () {
-                            return ListView.builder(
-                              itemCount: tweets.length,
-                              itemBuilder: (BuildContext context, index) {
-                                final tweet = tweets[index];
-                                return TweetCard(tweetModel: tweet);
-                              },
-                            );
-                          },
-                        );
+                    // can make it realtime by copying code from twiiter_reply view
+                    return ListView.builder(
+                      itemCount: tweets.length,
+                      itemBuilder: (context, index) => Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        child: TweetCard(tweetModel: tweets[index]),
+                      ),
+                    );
                   },
-                  error: (error, stackTrace) =>
-                      ErrorText(error: error.toString()),
+                  error: (er, st) => ErrorText(error: er.toString()),
                   loading: () => const Loader(),
                 ),
           );

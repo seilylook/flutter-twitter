@@ -9,6 +9,7 @@ import 'package:twitter_clone/common/common.dart';
 import 'package:twitter_clone/constants/assets_constants.dart';
 import 'package:twitter_clone/core/enums/tweet_type_enum.dart';
 import 'package:twitter_clone/features/auth/controller/auth_controller.dart';
+import 'package:twitter_clone/features/profile/views/user_profile_view.dart';
 import 'package:twitter_clone/features/tweet/controller/tweet_controller.dart';
 import 'package:twitter_clone/features/tweet/views/twitter_reply_view.dart';
 import 'package:twitter_clone/features/tweet/widgets/carousel_image.dart';
@@ -45,11 +46,17 @@ class TweetCard extends ConsumerWidget {
                         children: [
                           Container(
                             margin: const EdgeInsets.all(10),
-                            child: CircleAvatar(
-                              backgroundImage: NetworkImage(
-                                user.profilePic!,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                    context, UserProfileView.route(user));
+                              },
+                              child: CircleAvatar(
+                                backgroundImage: NetworkImage(
+                                  user.profilePic!,
+                                ),
+                                radius: 40,
                               ),
-                              radius: 40,
                             ),
                           ),
                           Expanded(

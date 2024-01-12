@@ -4,14 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:twitter_clone/common/common.dart';
 import 'package:twitter_clone/core/utils.dart';
 import 'package:twitter_clone/features/auth/controller/auth_controller.dart';
-import 'package:twitter_clone/features/home/views/home_view.dart';
 import 'package:twitter_clone/features/profile/controller/user_profile_controller.dart';
 import 'package:twitter_clone/theme/theme.dart';
 
 class EditProfileView extends ConsumerStatefulWidget {
-  static route() =>
+  const EditProfileView({Key? key}) : super(key: key);
+
+  static MaterialPageRoute route() =>
       MaterialPageRoute(builder: (context) => const EditProfileView());
-  const EditProfileView({super.key});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -19,76 +19,75 @@ class EditProfileView extends ConsumerStatefulWidget {
 }
 
 class _EditProfileViewState extends ConsumerState<EditProfileView> {
-  late TextEditingController nameController;
-  late TextEditingController bioContoller;
+  late TextEditingController nameCtr;
+  late TextEditingController bioCtr;
   File? bannerFile;
   File? profileFile;
 
   @override
   void initState() {
     super.initState();
-    nameController = TextEditingController(
+    nameCtr = TextEditingController(
         text: ref.read(currentUserDetailsProvider).value?.name ?? '');
-    bioContoller = TextEditingController(
+    bioCtr = TextEditingController(
         text: ref.read(currentUserDetailsProvider).value?.bio ?? '');
-    bioContoller;
   }
 
   @override
   void dispose() {
+    nameCtr.dispose();
+    bioCtr.dispose();
     super.dispose();
-    nameController.dispose();
-    bioContoller.dispose();
   }
 
-  void selectBannerImage() async {
-    final banner = await pickImage();
-    if (banner != null) {
+  Future<void> selectBannerImage() async {
+    final image = await pickImage();
+    if (image != null) {
       setState(() {
-        bannerFile = banner;
+        bannerFile = image;
       });
     }
   }
 
-  void selectProfileImage() async {
-    final profile = await pickImage();
-    if (profile != null) {
+  Future<void> selectProfileImage() async {
+    final image = await pickImage();
+    if (image != null) {
       setState(() {
-        profileFile = profile;
+        profileFile = image;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final userModel = ref.watch(currentUserDetailsProvider).value;
+    final currentUser = ref.watch(currentUserDetailsProvider).value;
     final isLoading = ref.watch(userProfileControllerProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Edit Profile"),
-        centerTitle: false,
+        title: const Text('Edit Profile'),
         actions: [
           TextButton(
             onPressed: () {
+              if (currentUser == null) return;
+
               ref
-                  .read(userProfileControllerProvider.notifier)
+                  .watch(userProfileControllerProvider.notifier)
                   .updateUserProfile(
-                    userModel: userModel!.copyWith(
-                      name: nameController.text,
-                      bio: bioContoller.text,
+                    userModel: currentUser.copyWith(
+                      bio: bioCtr.text,
+                      name: nameCtr.text,
                     ),
                     context: context,
                     bannerFile: bannerFile,
                     profileFile: profileFile,
                   );
-              Navigator.pop(context, HomeView.route());
             },
-            child: const Text("Save"),
+            child: const Text('Save'),
           ),
         ],
       ),
-      body: isLoading || userModel == null
+      body: isLoading || currentUser == null
           ? const Loader()
           : Column(
               children: [
@@ -107,13 +106,16 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
                           child: bannerFile != null
                               ? Image.file(
                                   bannerFile!,
-                                  fit: BoxFit.fitWidth,
+                                  fit: BoxFit.cover,
                                 )
-                              : userModel.bannerPic!.isEmpty
-                                  ? Container(color: Pallete.blueColor)
-                                  : Image.network(
-                                      userModel.bannerPic!,
-                                      fit: BoxFit.fitWidth,
+                              : currentUser.bannerPic != null &&
+                                      currentUser.bannerPic!.isNotEmpty
+                                  ? Image.network(
+                                      currentUser.bannerPic!,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Container(
+                                      color: Pallete.blueColor,
                                     ),
                         ),
                       ),
@@ -124,15 +126,12 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
                           onTap: selectProfileImage,
                           child: profileFile != null
                               ? CircleAvatar(
-                                  backgroundImage: FileImage(
-                                    profileFile!,
-                                  ),
+                                  backgroundImage: FileImage(profileFile!),
                                   radius: 40,
                                 )
                               : CircleAvatar(
-                                  backgroundImage: NetworkImage(
-                                    userModel.profilePic!,
-                                  ),
+                                  backgroundImage:
+                                      NetworkImage(currentUser.profilePic!),
                                   radius: 40,
                                 ),
                         ),
@@ -141,21 +140,23 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
                   ),
                 ),
                 TextField(
-                  controller: nameController,
+                  controller: nameCtr,
                   decoration: const InputDecoration(
-                    hintText: "Name",
+                    hintText: 'Name',
                     contentPadding: EdgeInsets.all(18),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(
+                  height: 20,
+                ),
                 TextField(
-                  controller: bioContoller,
+                  controller: bioCtr,
                   decoration: const InputDecoration(
-                    hintText: "Bio",
+                    hintText: 'Bio',
                     contentPadding: EdgeInsets.all(18),
                   ),
                   maxLines: 4,
-                ),
+                )
               ],
             ),
     );

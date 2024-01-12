@@ -20,11 +20,14 @@ final userProfileControllerProvider =
 // Notifier를 지켜보고 있는 Provider
 // View/Widget 에서 지켜보고 있는 Provider이다.
 // 이 Provider에서 데이터 변화를 알 수 있고 && 사용할 수 있다.
-final getUserTweetsProvider = FutureProvider.family((ref, String uid) {
-  final userProfileController =
-      ref.watch(userProfileControllerProvider.notifier);
-  return userProfileController.getUserTweets(uid);
-});
+final getUserTweetsProvider = FutureProvider.autoDispose.family(
+  (ref, String userId) =>
+      ref.watch(userProfileControllerProvider.notifier).getUserTweets(userId),
+);
+
+final getLatestUserProfileDataProvider = StreamProvider(
+  (ref) => ref.watch(userAPIProvider).getLatestUserProfileData(),
+);
 
 final class UserProfileController extends StateNotifier<bool> {
   final TweetAPI _tweetAPI;
@@ -45,12 +48,14 @@ final class UserProfileController extends StateNotifier<bool> {
     return tweets.map((e) => TweetModel.fromMap(e.data)).toList();
   }
 
-  void updateUserProfile(
-      {required UserModel userModel,
-      required BuildContext context,
-      required File? bannerFile,
-      required File? profileFile}) async {
+  void updateUserProfile({
+    required UserModel userModel,
+    required BuildContext context,
+    File? bannerFile,
+    File? profileFile,
+  }) async {
     state = true;
+
     if (bannerFile != null) {
       final bannerUrl = await _storageAPI.uploadImages([bannerFile]);
       userModel = userModel.copyWith(
