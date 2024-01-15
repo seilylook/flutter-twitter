@@ -92,14 +92,17 @@ class TweetController extends StateNotifier<bool> {
     );
 
     final res = await _tweetAPI.likeTweet(tweetModel);
-    res.fold((l) => null, (r) {
-      _notificationController.createNotification(
-        text: '${userModel.name} liked your tweet',
-        postId: tweetModel.id,
-        notificationType: NotificationType.like,
-        uid: tweetModel.uid,
-      );
-    });
+    res.fold(
+      (l) => null,
+      (r) {
+        _notificationController.createNotification(
+          text: '${userModel.name} liked your tweet',
+          postId: tweetModel.id,
+          notificationType: NotificationType.like,
+          uid: tweetModel.uid,
+        );
+      },
+    );
   }
 
   void reshareTweet(
@@ -128,10 +131,18 @@ class TweetController extends StateNotifier<bool> {
 
         res2.fold(
           (l) => showSnackBar(context, l.message),
-          (r) => showSnackBar(
-            context,
-            "Retweet Success!",
-          ),
+          (r) async {
+            showSnackBar(
+              context,
+              "Retweet Success!",
+            );
+            _notificationController.createNotification(
+              text: '${currentUser.name} retweeted your tweet',
+              postId: tweetModel.id,
+              notificationType: NotificationType.retweet,
+              uid: tweetModel.uid,
+            );
+          },
         );
       },
     );

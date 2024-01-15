@@ -23,176 +23,87 @@ class TwitterReplyView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Twitter'),
+        title: const Text('Tweet'),
       ),
       body: Column(
         children: [
-          Flexible(
-            child: Column(
-              children: [
-                TweetCard(tweetModel: tweetModel),
-                Expanded(
-                  child: ref.watch(getRepliesToTweetsProvider(tweetModel)).when(
-                        data: (tweets) {
-                          return ref.watch(getLatestTweetProvider).when(
-                                data: (data) {
-                                  final latestTweet =
-                                      TweetModel.fromMap(data.payload);
+          TweetCard(tweetModel: tweetModel),
+          ref.watch(getRepliesToTweetsProvider(tweetModel)).when(
+                data: (tweets) {
+                  return ref.watch(getLatestTweetProvider).when(
+                        data: (data) {
+                          final latestTweet = TweetModel.fromMap(data.payload);
 
-                                  bool isTweetAlreadyPresent = false;
+                          // check if incoming tweet repliesTo this current tweet
+                          // and it doesn't exist in the current list of tweets to avoid duplication
+                          if (latestTweet.repliedTo == tweetModel.id &&
+                              !tweets.contains(latestTweet)) {
+                            if (data.events.contains(
+                                'databases.*.collections.${AppwriteConstants.tweetCollectionId}.documents.*.create')) {
+                              tweets.insert(
+                                  0, TweetModel.fromMap(data.payload));
+                            } else if (data.events.contains(
+                                'databases.*.collections.${AppwriteConstants.tweetCollectionId}.documents.*.update')) {
+                              final startingPoint =
+                                  data.events[0].lastIndexOf('documents.');
+                              final endPoint =
+                                  data.events[0].lastIndexOf('.update');
+                              final tweetId = data.events[0]
+                                  .substring(startingPoint + 10, endPoint);
 
-                                  for (final tweetModel in tweets) {
-                                    if (tweetModel.id == latestTweet.id) {
-                                      isTweetAlreadyPresent = true;
-                                      break;
-                                    }
-                                  }
+                              var tweet = tweets
+                                  .where((element) => element.id == tweetId)
+                                  .first;
+                              final tweetIndex = tweets.indexOf(tweet);
+                              tweets.removeWhere(
+                                  (element) => element.id == tweetId);
+                              tweets.insert(tweetIndex, tweet);
+                            }
+                          }
 
-                                  if (!isTweetAlreadyPresent &&
-                                      latestTweet.repliedTo == tweetModel.id) {
-                                    if (data.events.contains(
-                                      'databases.*.collections.${AppwriteConstants.tweetCollectionId}.documents.*.create',
-                                    )) {
-                                      logger.d(data.events);
-
-                                      tweets.insert(
-                                          0, TweetModel.fromMap(data.payload));
-                                    } else if (data.events.contains(
-                                      'databases.*.collections.${AppwriteConstants.tweetCollectionId}.documents.*.update',
-                                    )) {
-                                      logger.d(data.events[0]);
-                                      // get id of tweet
-                                      final startingPoint = data.events[0]
-                                          .lastIndexOf('documents.');
-                                      final endPoint =
-                                          data.events[0].lastIndexOf('.update');
-                                      final targetTweetId = data.events[0]
-                                          .substring(
-                                              startingPoint + 10, endPoint);
-
-                                      var newTweet = tweets
-                                          .where((element) =>
-                                              element.id == targetTweetId)
-                                          .first;
-
-                                      final removeTweetIndex =
-                                          tweets.indexOf(newTweet);
-
-                                      tweets.removeWhere(
-                                        (element) =>
-                                            element.id == targetTweetId,
-                                      );
-
-                                      newTweet =
-                                          TweetModel.fromMap(data.payload);
-                                      tweets.insert(removeTweetIndex, newTweet);
-                                    }
-                                  }
-
-                                  return ListView.builder(
-                                    itemCount: tweets.length,
-                                    itemBuilder: (BuildContext context, index) {
-                                      final tweet = tweets[index];
-                                      return TweetCard(tweetModel: tweet);
-                                    },
-                                  );
-                                },
-                                error: (error, stackTrace) =>
-                                    ErrorText(error: error.toString()),
-                                loading: () {
-                                  return ListView.builder(
-                                    itemCount: tweets.length,
-                                    itemBuilder: (BuildContext context, index) {
-                                      final tweet = tweets[index];
-                                      return TweetCard(tweetModel: tweet);
-                                    },
-                                  );
-                                },
-                              );
+                          return Expanded(
+                            child: ListView.builder(
+                              itemCount: tweets.length,
+                              itemBuilder: (context, index) => Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                child: TweetCard(tweetModel: tweets[index]),
+                              ),
+                            ),
+                          );
                         },
-                        error: (error, stackTrace) =>
-                            ErrorText(error: error.toString()),
-                        loading: () => const Loader(),
-                      ),
-                )
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              maxLines: null,
-              style: const TextStyle(fontSize: 16),
-              onSubmitted: (value) {
-                ref.read(tweetControllerProvider.notifier).shareTweet(
-                  images: [],
-                  text: value,
-                  context: context,
-                  repliedTo: tweetModel.id,
-                );
-                Navigator.pop(context, HomeView.route());
-              },
-              decoration: InputDecoration(
-                contentPadding: const EdgeInsets.all(16.0),
-                hintText: 'Type in your comment.',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                  borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+                        error: (e, st) => ErrorText(error: e.toString()),
+                        loading: () {
+                          return Expanded(
+                            child: ListView.builder(
+                              itemCount: tweets.length,
+                              itemBuilder: (context, index) => Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                child: TweetCard(tweetModel: tweets[index]),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                },
+                error: (error, st) => ErrorText(
+                  error: error.toString(),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                  borderSide: BorderSide(
-                      color: Theme.of(context).primaryColor, width: 2.0),
-                ),
+                loading: () => const Loader(),
               ),
-            ),
-          ),
         ],
       ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.only(bottom: 10),
-        decoration: const BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: Pallete.greyColor,
-              width: 0.3,
-            ),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(25).copyWith(
-                left: 15,
-                right: 15,
-              ),
-              child: GestureDetector(
-                onTap: () {},
-                child: SvgPicture.asset(
-                  AssetsConstants.galleryIcon,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(25).copyWith(
-                left: 15,
-                right: 15,
-              ),
-              child: SvgPicture.asset(
-                AssetsConstants.gifIcon,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(25).copyWith(
-                left: 15,
-                right: 15,
-              ),
-              child: SvgPicture.asset(
-                AssetsConstants.emojiIcon,
-              ),
-            ),
-          ],
+      bottomNavigationBar: TextField(
+        onSubmitted: (value) {
+          ref.read(tweetControllerProvider.notifier).shareTweet(
+            images: [],
+            text: value,
+            context: context,
+            repliedTo: tweetModel.id,
+          );
+        },
+        decoration: const InputDecoration(
+          hintText: 'Tweet your reply',
+          contentPadding: EdgeInsets.only(left: 20),
         ),
       ),
     );

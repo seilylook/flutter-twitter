@@ -22,36 +22,25 @@ class NotificationTile extends StatelessWidget {
 
   Widget getIcon() {
     switch (notification.type) {
+      case NotificationType.follow:
+        return const Icon(Icons.person, color: Pallete.blueColor);
+
       case NotificationType.like:
         return SvgPicture.asset(
           AssetsConstants.likeFilledIcon,
           color: Pallete.redColor,
           height: 20,
         );
-
-      case NotificationType.follow:
-        return const Icon(
-          Icons.person,
-          color: Pallete.blueColor,
-        );
-
       case NotificationType.retweet:
         return SvgPicture.asset(
           AssetsConstants.retweetIcon,
           color: Pallete.whiteColor,
+          height: 20,
         );
-
       case NotificationType.reply:
-        return const Icon(
-          Icons.comment,
-          color: Pallete.whiteColor,
-        );
-
+        return const Icon(Icons.comment, color: Pallete.whiteColor);
       default:
-        return const Icon(
-          Icons.info,
-          color: Pallete.blueColor,
-        );
+        return const Icon(Icons.info, color: Pallete.blueColor);
     }
   }
 }
